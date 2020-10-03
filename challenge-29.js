@@ -56,6 +56,7 @@
       
       createNewCar: function createNewCar() {
         var $fragment = document.createDocumentFragment();
+        
         var $tr = document.createElement('tr');
         var $tdImage = document.createElement('td');
         var $image = document.createElement('img');
@@ -63,24 +64,37 @@
         var $tdYear = document.createElement('td');
         var $tdPlate = document.createElement('td');
         var $tdColor = document.createElement('td');
+        var $tdRemoveBtn = document.createElement('td');
         
         $image.src = $('[data-js="image"]').get().value;
-        $tdImage.appendChild($image);
-        
         $tdModel.innerHTML = $('[data-js="model"]').get().value;
         $tdYear.innerHTML = $('[data-js="year"]').get().value;
         $tdPlate.innerHTML = $('[data-js="plate"]').get().value;
         $tdColor.innerHTML = $('[data-js="color"]').get().value;
+        $tdRemoveBtn.innerHTML = '×';
         
+        $tr.setAttribute('data-id', $tdPlate.innerHTML);
+        $tdRemoveBtn.setAttribute('data-id', $tdPlate.innerHTML);
+        
+        $tdRemoveBtn.addEventListener('click', this.handleRemoveClick, false);
+        
+        $tdImage.appendChild($image);
         $tr.appendChild($tdImage);
         $tr.appendChild($tdModel);
         $tr.appendChild($tdYear);
         $tr.appendChild($tdPlate);
         $tr.appendChild($tdColor);
+        $tr.appendChild($tdRemoveBtn);
         
         return $fragment.appendChild($tr);
       },
       
+      handleRemoveClick: function handleRemoveClick(e) {
+        var id = e.target.getAttribute('data-id');
+        
+        $(`[data-id="${id}"]`).get().remove();
+      },
+
       companyInfo: function companyInfo() {
         var ajax = new XMLHttpRequest();
         
