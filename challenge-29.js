@@ -40,6 +40,7 @@
     return {
       init: function init() {
         this.companyInfo();
+        this.carInfo();
         this.initEvents();
       },
       
@@ -51,48 +52,116 @@
         e.preventDefault();
         
         var $tableCar = $('[data-js="table-car"]').get();
+        
+        while($tableCar.firstChild) {
+          $tableCar.removeChild($tableCar.firstChild);
+        }
+        
         $tableCar.appendChild(app.createNewCar());
       },
       
       createNewCar: function createNewCar() {
-        var $fragment = document.createDocumentFragment();
-        
-        var $tr = document.createElement('tr');
-        var $tdImage = document.createElement('td');
-        var $image = document.createElement('img');
-        var $tdModel = document.createElement('td');
-        var $tdYear = document.createElement('td');
-        var $tdPlate = document.createElement('td');
-        var $tdColor = document.createElement('td');
-        var $tdRemoveBtn = document.createElement('td');
-        
-        $image.src = $('[data-js="image"]').get().value;
-        $tdModel.innerHTML = $('[data-js="model"]').get().value;
-        $tdYear.innerHTML = $('[data-js="year"]').get().value;
-        $tdPlate.innerHTML = $('[data-js="plate"]').get().value;
-        $tdColor.innerHTML = $('[data-js="color"]').get().value;
-        $tdRemoveBtn.innerHTML = '×';
-        
-        $tr.setAttribute('data-id', $tdPlate.innerHTML);
-        $tdRemoveBtn.setAttribute('data-id', $tdPlate.innerHTML);
-        
-        $tdRemoveBtn.addEventListener('click', this.handleRemoveClick, false);
-        
-        $tdImage.appendChild($image);
-        $tr.appendChild($tdImage);
-        $tr.appendChild($tdModel);
-        $tr.appendChild($tdYear);
-        $tr.appendChild($tdPlate);
-        $tr.appendChild($tdColor);
-        $tr.appendChild($tdRemoveBtn);
-        
-        return $fragment.appendChild($tr);
+        this.postCar();
+        this.carInfo();
       },
       
       handleRemoveClick: function handleRemoveClick(e) {
         var id = e.target.getAttribute('data-id');
         
         $(`[data-id="${id}"]`).get().remove();
+        
+        let ajax = new XMLHttpRequest();
+        
+        ajax.open('POST', 'http://localhost:3000/car', true);
+        ajax.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        
+        ajax.send(`plate=${id}`);
+        
+        ajax.addEventListener('readystatechange', this.postPlate, false);
+      },
+      
+      postPlate: function postPlate() {
+        if(!app.isReady.call(this))
+          return;
+      },
+      
+      carInfo: function carInfo() {
+        var ajax = new XMLHttpRequest();
+        
+        ajax.open('GET', 'http://localhost:3000/car', true);
+        ajax.send();
+        ajax.addEventListener('readystatechange', this.getCarInfo, false);
+      },
+      
+      getCarInfo: function getCarInfo() {
+        if(!app.isReady.call(this))
+          return;
+          
+        var car = JSON.parse(this.responseText);
+        
+        car.forEach(getCarsFromData);
+        
+        function getCarsFromData(item) {
+          var $tableCar = $('[data-js="table-car"]').get();
+          var $fragment = document.createDocumentFragment();
+        
+          var $tr = document.createElement('tr');
+          var $imageWrapper = document.createElement('td');
+          var $image = document.createElement('img');
+          var $model = document.createElement('td');
+          var $year = document.createElement('td');
+          var $plate = document.createElement('td');
+          var $color = document.createElement('td');
+          var $removeBtn = document.createElement('td');
+        
+          $image.src = item.image;
+          $model.innerHTML = item.brandModel;
+          $year.innerHTML = item.year;
+          $plate.innerHTML = item.plate;
+          $color.innerHTML = item.color;
+          $removeBtn.innerHTML = '×';
+          
+          $tr.setAttribute('data-js', 'tr-car');
+          $tr.setAttribute('data-id', $plate.innerHTML);
+          $removeBtn.setAttribute('data-id', $plate.innerHTML);
+          
+          $removeBtn.addEventListener('click', app.handleRemoveClick, false);
+          
+          $imageWrapper.appendChild($image);
+          $tr.appendChild($imageWrapper);
+          $tr.appendChild($model);
+          $tr.appendChild($year);
+          $tr.appendChild($plate);
+          $tr.appendChild($color);
+          $tr.appendChild($removeBtn);
+          
+          $fragment.appendChild($tr);
+          
+          return $tableCar.appendChild($fragment);
+        }
+      },
+      
+      postCar: function postCar() {
+        var ajax = new XMLHttpRequest();
+        
+        ajax.open('POST', 'http://localhost:3000/car', true);
+        ajax.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        
+        var $image = $('[data-js="image"]').get().value;
+        var $model = $('[data-js="model"]').get().value;
+        var $year = $('[data-js="year"]').get().value;
+        var $plate = $('[data-js="plate"]').get().value;
+        var $color = $('[data-js="color"]').get().value;
+        
+        
+        ajax.send(`image=${$image}&brandModel=${$model}&year=${$year}&plate=${$plate}&color=${$color}`);
+        
+        ajax.addEventListener('readystatechange', this.postCarInfo, false);
+      },
+      
+      postCarInfo: function postCarInfo() {
+        if(!app.isReady.call(this))
+          return;
       },
 
       companyInfo: function companyInfo() {
