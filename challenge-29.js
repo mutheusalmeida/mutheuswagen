@@ -65,26 +65,6 @@
         this.carInfo();
       },
       
-      handleRemoveClick: function handleRemoveClick(e) {
-        var id = e.target.getAttribute('data-id');
-        
-        $(`[data-id="${id}"]`).get().remove();
-        
-        let ajax = new XMLHttpRequest();
-        
-        ajax.open('POST', 'http://localhost:3000/car', true);
-        ajax.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        
-        ajax.send(`plate=${id}`);
-        
-        ajax.addEventListener('readystatechange', this.postPlate, false);
-      },
-      
-      postPlate: function postPlate() {
-        if(!app.isReady.call(this))
-          return;
-      },
-      
       carInfo: function carInfo() {
         var ajax = new XMLHttpRequest();
         
@@ -121,7 +101,6 @@
           $color.innerHTML = item.color;
           $removeBtn.innerHTML = '×';
           
-          $tr.setAttribute('data-js', 'tr-car');
           $tr.setAttribute('data-id', $plate.innerHTML);
           $removeBtn.setAttribute('data-id', $plate.innerHTML);
           
@@ -139,6 +118,26 @@
           
           return $tableCar.appendChild($fragment);
         }
+      },
+      
+      handleRemoveClick: function handleRemoveClick(e) {
+        var id = e.target.getAttribute('data-id');
+        
+        $(`[data-id="${id}"]`).get().remove();
+        
+        let ajax = new XMLHttpRequest();
+        
+        ajax.open('DELETE', 'http://localhost:3000/car', true);
+        ajax.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        
+        ajax.send(`plate=${id}`);
+        
+        ajax.addEventListener('readystatechange', app.deletePlate, false);
+      },
+      
+      deletePlate: function deletePlate() {
+        if(!app.isReady.call(this))
+          return;
       },
       
       postCar: function postCar() {
